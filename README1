@@ -1,0 +1,110 @@
+a) Address 0000 0000 0000 0000 0010 1001 0000 0111 (read access) 
+Page table index = 2
+Present in TLB so its a TLB hit
+
+Changes to page table
+------------------------------
+No changes in page table
+
+Changes to TLB
+--------------------------------------------
+	         TLB
+virtual page	frame	valid	dirty	read-only	use
+1		 0	1	0	0		0
+2 		 1 	1	0	0		1
+
+
+Calculated physical address: 0000 0000 0000 0000 0001 1001 0000 0111
+
+Effect on a memory reference: Completion and Success
+
+==============================================================================================
+b)  0000 0000 0000 0000 0011 0001 1100 0101
+Page table index = 3
+
+Changes to page table
+No changes in page table
+
+Changes to TLB
+--------------------------------------------------------
+               	         TLB
+virtual page	frame	valid	dirty	read-only	use
+2 		 1 	1	0	0		1
+3 		 2 	1	1	0		1
+
+Calculated physical address: 0000 0000 0000 0000 0010 0001 1100 0101
+	
+Effect on a memory reference: Completion and Success
+
+================================================================================================
+c)  0000 0000 0000 0000 0001 0101 0110 1100 (write access)
+Page table index: 1
+
+Changes to page table: No changes in page table
+
+Changes to TLB
+               	         TLB
+virtual page	frame	valid	dirty	read-only	use
+3 		 2 	1	1	0		0
+1 		 0 	1	1	0		1
+
+
+Calculated physical address:0000 0000 0000 0000 0000 0101 0110 1100
+
+Effect on a memory reference: TLB miss
+
+===============================================================================================
+d) 0000 0000 0000 0000 0010 0010 0000 0010 (write access)
+Page table index: 2
+
+Changes to page table
+			PAGE TABLE
+virtual page	frame	valid	dirty	read-only	use
+2 		 1 	1	0	0		0
+3		 2 	1	1	0		1
+
+Changes to TLB
+			TLB
+virtual page	frame	valid	dirty	read-only	use
+1 		 0 	1	1	0		1
+2		 1	1	0	1		1	
+
+Calculated physical address:0000 0000 0000 0000 0001 1001 0000 0111 
+
+Effect on a memory reference: TLB miss and access voilation
+
+===============================================================================================
+e)  0000 0000 0000 0000 0000 0011 0101 0101
+Page table index: 0
+Changes to page table
+		PAGE TABLE
+virtual page	frame	valid	dirty	read-only	use
+2 		 1 	1	0	0		0
+1		 0 	1	1	0		1
+
+Changes to TLB
+			TLB
+virtual page	frame	valid	dirty	read-only	use
+2		 1	1	0	1		0
+0 		 2 	0	1	0		1
+
+frame number for page 0 can be arbitary and depends on which page is allocated by operating system.
+
+Calculated physical address:0000 0000 0000 0000 0010 0011 0101 0101
+
+Effect on a memory reference: TLB miss and page fault because page 0 is invalid
+
+=================================================================================================
+f) 0000 0000 0000 0000 0100 0011 0000 0001 (read access)
+Page table index: 4
+Changes to page table
+	No changes in page table
+Changes to TLB
+			TLB
+virtual page	frame	valid	dirty	read-only	use
+0 		 2 	0	1	0		1
+4 		 1	1	0	0		1
+
+Calculated physical address: 0000 0000 0000 0000 0001 0011 0000 0001
+
+Effect on a memory reference: TLB miss
