@@ -1,2 +1,101 @@
 Mythread_Synchronization_Primitives
-===================================
+===================================Group Information:
+-----------------------------
+hmalipa Harshavardhan Reddy Malipatel
+jjohn Joice John
+srmale Santosh Reddy Male
+
+Files
+-----------------------------
+All files are located under hmalipa_hw2/ directory
+
+
+Build steps:
+----------------------------
+Compiling:
+      make -f Makefile
+This command compiles all the files related to thread library and creates an executable "driver" which runs our testcase defined in mytest.c
+      
+Clean:
+      make -f Makefile clean
+This command cleans all the object files and executables related to thread library as well as a3 and a4 executables
+
+
+Modules:
+-----------------------------
+1. Futex:
+
+This module provide synchronization primitives. This was given as part of assignment files. Futex_up and Futex_down functions were extensively used in thread library to
+introduce atomicity while implementing the mythread_cond_wait() and mythread_cond_signal().
+
+Files:
+futex.h
+futex.c
+futex_inline.h
+myatomic.h
+
+2. mymutex.c/h
+
+This module implements the lock by by using test and test and set lock. 
+
+
+3. mycond.c/h
+
+This module implements the cond_wait() cond_signal() and cond_signal_broadcast() methods.
+
+
+4. Test cases
+   
+    Command to create executables
+           make -f Makefile
+    This will create two executables mytest and mytest2 and do not take any arguments. 
+
+   mytest.c
+   ........................................ 
+a. It is a test case for testing mutex and conditional variables functionality.
+b. It creates NR_THREADS = 200 and one contional varaible called okToProceed and a mutex. 
+c. All the threads block on okToProceed conditional variable.
+d. Once all threads are created main sends a broadcast signal
+e. All threads will unblock and sleep for a 0.25 seconds before exiting
+f. Main thread joins on all the created threads using mythread_join.
+
+    mytest2.c
+   .......................................
+a. This test ensure that thread A arrives before thread B in all scenarios
+b. The main thread creates two threads A and B and a condition variable and a mutex to protect and synchronize on shared variable hasAArrived.
+c. Thread A sleeps for 1 second and thread B checks hasAArrived and if it is not then it blocks on conditional variable.
+d. When thread a wakes up it prints A has arrived and signals B to proceed and exits 
+e. Thread B proceeds and prints B arrived and exits  
+
+The test case selected checks thoroughly the working of all the implemented functions in mutex and condition variables modules.
+
+Files:
+mytest.c
+mytest2.c
+
+
+Implementation Overview:
+----------------------------------
+
+Mutex implementation:
+............................................
+
+1. Each lock has an id and a blocking queue. All locks are maintained in a table (mcb_table). nr_mutexes keeps track of the locks present in the table.
+2. Lock is implemented using the TTAS lock which inturn uses compare and swap procedure with MAX_RETRIES of 100 and then the thread is suspended by using mythread_block().
+3. When threads are waiting for a lock, they can be in any of the two states, either spinning or blocked. The threads which have not reached the MAX_RETRIES of 100 are said to be in the spinning state and which have crosses the MAX_RETRIES are said to be blocked as they are added to the blocked queue.
+4. During unlock, priority is given to the blocked threads. If there are no blocked threads, then the lock can be qcquired by any one of the spinning threads.
+5. During initialisation, the mcb_table is expanded to accomodate the prointer to the new lock and then memory is allocated to the new lock. Lock id is set to nr_mutexes.
+6. While destroying the lock, all the memory is freed up and the table entry for the lock is set to NULL.
+
+Condition variables implementation:
+.............................................
+
+1. Each condition variable has an id, futex for ensuring atomicity and a blocked queue.
+2. During initialisation, memory is allocated to the pointer of condition variable in the ccb_table. Then, memory is allocated for the condition variable.
+3. futex has been used for mutual exclusion between wait, signal and broadcast operations.
+4. In cond_wait, the futex_down ,block_phase1, lock release, block_phase2, futex_up and lock acquire are executed.
+5. The block_phase1 and lock_release are executed atomically. The cond_signal or cond_signal_broadcast will not be received at this point of time as they would be block on futex.
+6. The block_phase2 and futex_up are executed atomically.
+7. In cond_signal, the control is blocked on the futex. This is to ensure not to signal while any thread is going to block.
+8. In cond_signal, the thread which blocked first is removed from head of the queue and is resumed.
+9. In cond_broadcast, it will wait on futex similar to signal and if there is no thread executing signal/broadcast or conditional wait it resumes all threads that blocked on that condtional variable.
